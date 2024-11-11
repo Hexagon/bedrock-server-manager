@@ -1,5 +1,5 @@
 // build/known-versions.ts
-import { getLatestVersion, VersionEntry } from "../src/version-finder.ts";
+import { getLatestVersion, type VersionEntry } from "../src/version-finder.ts";
 
 async function updateKnownVersions() {
   try {
@@ -18,7 +18,9 @@ async function updateKnownVersions() {
         // If the file doesn't exist or is invalid, ignore the error
         if (!(error instanceof Deno.errors.NotFound)) {
           console.warn(
-            `Error reading known-versions.json: ${(error instanceof Error) ? error.message : "Unknown"}`,
+            `Error reading known-versions.json: ${
+              (error instanceof Error) ? error.message : "Unknown"
+            }`,
           );
         }
       }
@@ -41,7 +43,11 @@ async function updateKnownVersions() {
       console.warn("Failed to fetch the latest version.");
     }
   } catch (error) {
-    console.error(`Error updating known versions: ${(error instanceof Error) ? error.message : "Unknown"}`);
+    console.error(
+      `Error updating known versions: ${
+        (error instanceof Error) ? error.message : "Unknown"
+      }`,
+    );
   }
 }
 
