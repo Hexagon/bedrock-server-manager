@@ -17,11 +17,11 @@ anywhere in your terminal.
 ## Features
 
 - Automatically installs/upgrade the latest Minecraft Bedrock Dedicated Server
-  version to `./server`.
-- Sets up necessary configuration files in a separate folder `./config`.
+  version to `./server/`.
+- Sets up necessary configuration files in a separate folder `./config/`.
 - Manages/updates vanilla resource packs by copying them from the server to the
   configuration folder on server upgrade.
-- Allows automated setup of a system service named `bsm` through
+- Allows automated setup of a system service through
   `bsm enable-service` and `bsm disable-service`.
 
 ## Usage
