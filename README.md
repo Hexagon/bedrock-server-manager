@@ -15,8 +15,8 @@ Servers with ease.
 
 Bsm is powered by Deno, if you do not already have it installed, run the
 follwing command `curl -fsSL https://deno.land/install.sh | sh` or check out the
-full guide at [https://docs.deno.com/runtime/#install-deno](Deno Getting
-Started).
+full guide at <a href="https://docs.deno.com/runtime/#install-deno">Deno Getting
+Started</a>.
 
 ### Installation
 
