@@ -61,7 +61,9 @@ async function main() {
         cwd: resolve("./"),
         user: getEnv("USER"),
       }, false);
-      console.log("Minecraft Bedrock Server service enabled successfully!");
+      console.log(
+        `Minecraft Bedrock Server service '${config.serviceName}' enabled successfully!`,
+      );
     } catch (error) {
       console.error("Failed to enable the service:", error);
     }
@@ -77,7 +79,9 @@ async function main() {
         system: false,
         name: config.serviceName,
       });
-      console.log("Minecraft Bedrock Server service disabled successfully!");
+      console.log(
+        `Minecraft Bedrock Server service '${config.serviceName}' disabled successfully!`,
+      );
     } catch (error) {
       console.error("Failed to disable the service:", error);
     }

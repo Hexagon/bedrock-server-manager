@@ -59,8 +59,8 @@ for you.
 bsm enable-service
 ```
 
-This will install a user service named `bsm`, which will be auto-started at
-boot. Service can be uninstalled using `bsm disable-service`.
+This will install a user service named `bsm-service-<randomnumber>`, which will
+be auto-started at boot. Service can be uninstalled using `bsm disable-service`.
 
 **Listing available versions:**
 
@@ -69,6 +69,13 @@ bsm list
 ```
 
 This will print a list of all known server versions to the console.
+
+## Configuring backups
+
+Backups of world files will be performed automatically at server start, and
+daily at 3 am.
+
+You can change the cron pattern for periodic backups in `bsm.json`.
 
 ## License
 

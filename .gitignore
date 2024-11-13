@@ -3,3 +3,4 @@ start.sh
 server
 config
 backups
+bsm.json
