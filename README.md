@@ -3,17 +3,20 @@
 This tool helps you download, update, and manage Minecraft Bedrock Dedicated
 Servers with ease.
 
-## Getting started
+- Install or upgrade to the latest version of Minecraft Bedrock Dedicated Server
+  using a single command `bsm latest`.
+- Keeps configuration and worlds in a separate folder.
+- Updates vanilla resource packs by copying them from the server to the
+  configuration folder on server upgrade.
+- Enables automated setup of a system service through `bsm enable-service` and
+  `bsm disable-service`.
 
-### Prerequisites
+## Getting started
 
 Bsm is powered by Deno, if you do not already have it installed, run the
 follwing command `curl -fsSL https://deno.land/install.sh | sh` or check out the
 full guide at [https://docs.deno.com/runtime/#install-deno](Deno Getting
 Started).
-
-If you already have it installed, you should consider running `deno upgrade` to
-make sure you use a recent version.
 
 ### Installation
 
@@ -23,21 +26,10 @@ Installing and upgrading bsm is done through this command:
 deno install --global -frAn bsm jsr:@hexagon/bedrock-server-manager
 ```
 
-## Features
-
-- Automatically installs or upgrades the latest version of Minecraft Bedrock
-  Dedicated Server to the `./server/` directory.
-- Separates necessary configuration files to a separate folder `./config/`.
-- Updates vanilla resource packs by copying them from the server to the
-  configuration folder on server upgrade.
-- Enables automated setup of a system service through `bsm enable-service` and
-  `bsm disable-service`.
-
 ## Usage
 
-To get started, navigate to the directory where you want to install your
-Minecraft server and configuration files. Then run `bsm` with the desired
-version (usually "latest"):
+Navigate to the directory where you want to install your Minecraft server and
+configuration files. Then run `bsm` with the desired version (usually "latest"):
 
 ```bash
 bsm latest
