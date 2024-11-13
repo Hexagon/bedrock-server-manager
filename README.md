@@ -21,8 +21,8 @@ anywhere in your terminal.
 - Sets up necessary configuration files in a separate folder `./config/`.
 - Manages/updates vanilla resource packs by copying them from the server to the
   configuration folder on server upgrade.
-- Allows automated setup of a system service through
-  `bsm enable-service` and `bsm disable-service`.
+- Allows automated setup of a system service through `bsm enable-service` and
+  `bsm disable-service`.
 
 ## Usage
 
@@ -43,7 +43,8 @@ bsm latest
 ```
 
 This will download the latest Minecraft Bedrock Dedicated Server to `./server/`,
-set up the necessary files in `./config/`, and create a bsm configuration file `./bsm.json`>
+set up the necessary files in `./config/`, and create a bsm configuration file
+`./bsm.json`>
 
 **Starting the server manually:**
 
@@ -68,12 +69,25 @@ bsm list
 
 This will print a list of all known server versions to the console.
 
-## Automated Backups
+## Managing backups
+
+### Automated backups
 
 Backups of world files will be performed automatically at server start, and
 daily at 3 am.
 
 You can change the cron pattern for periodic backups using `./bsm.json`.
+
+### Manual Backups
+
+Make sure to shut down the server with `bsm disable-service`, then run
+`bsm backup`, and bring the server back up using `bsm enable-service`.
+
+### Restoring Backups
+
+Make sure to shut down the server with `bsm disable-service`, then run
+`bsm list-backups` to list backups, `bsm restore-backup <timestamp>` and bring
+the server back up using `bsm enable-service`.
 
 ## License
 
