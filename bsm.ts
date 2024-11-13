@@ -1,12 +1,11 @@
 // mc-server-update.ts
 import {
-  backupCronPattern,
   backupFolder,
   configFolder,
   serverFolder,
+  workingDirFolder,
 } from "./config.ts";
 import { copyResourcePacks } from "./src/copy-resource-packs.ts";
-import { createStartScript } from "./src/create-start-script.ts";
 import { downloadAndUnpackServer } from "./src/download-server.ts";
 import { prepareConfig } from "./src/prepare-config.ts";
 import {
@@ -17,11 +16,12 @@ import {
   type VersionEntry,
 } from "./src/version-finder.ts";
 import { installService, uninstallService } from "@cross/service";
-import { resolve } from "@std/path";
 import { getEnv } from "@cross/env";
 import { BedrockServer } from "./src/managed-process.ts";
 import { getWorldName, listBackups, restoreBackup } from "./src/backup.ts";
 import { Cron } from "@hexagon/croner";
+import { resolve } from "@std/path";
+import { readOrCreateBSMJson } from "./src/user-config.ts";
 const version = Deno.args[0] || "latest"; // Get version from command line argument or default to "latest"
 
 async function main() {
@@ -45,32 +45,37 @@ async function main() {
     } else {
       console.log("    Failed to fetch known versions.");
     }
-    console.log(""); // Add an extra newline for better readability
+    console.log("");
     return;
   }
 
   if (Deno.args.includes("enable-service")) {
-    const startScriptPath = resolve(`./start.sh`); // Assuming the start script is named "start.sh"
+    const config = await readOrCreateBSMJson(workingDirFolder);
+
+    const startScript = "bsm start";
     try {
       await installService({
         system: false,
-        name: "bsm",
-        cmd: startScriptPath,
+        name: config.serviceName,
+        cmd: startScript,
+        cwd: resolve("./"),
         user: getEnv("USER"),
       }, false);
       console.log("Minecraft Bedrock Server service enabled successfully!");
     } catch (error) {
       console.error("Failed to enable the service:", error);
     }
-    console.log(""); // Add an extra newline for better readability
+    console.log("");
     Deno.exit(0);
   }
 
   if (Deno.args.includes("disable-service")) {
+    const config = await readOrCreateBSMJson(workingDirFolder);
+
     try {
       await uninstallService({
         system: false,
-        name: "bsm",
+        name: config.serviceName,
       });
       console.log("Minecraft Bedrock Server service disabled successfully!");
     } catch (error) {
@@ -116,10 +121,18 @@ async function main() {
   }
 
   if (Deno.args.includes("start")) {
+    const config = await readOrCreateBSMJson(workingDirFolder);
+
     const server = new BedrockServer(serverFolder, configFolder);
+
+    // Back up before start
+    server.backup(backupFolder);
+
+    // Do start
     server.start();
-    // Start the cron job for backups
-    new Cron(backupCronPattern, () => {
+
+    // Start the cron job for daily backups
+    new Cron(config.backupCron, () => {
       console.log("Running scheduled backup...");
       server.backup(backupFolder);
     });
@@ -150,13 +163,11 @@ async function main() {
         selectedVersion.url,
         selectedVersion.version,
         serverFolder,
-        configFolder,
       );
-      await createStartScript(serverFolder, configFolder);
       await prepareConfig(serverFolder, configFolder);
       await copyResourcePacks(serverFolder, configFolder);
     } else {
-      console.error("Failed to get any version.");
+      console.error("Not sure wat to do, check arguments.");
       Deno.exit(1);
     }
   }

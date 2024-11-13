@@ -7,7 +7,6 @@ export class BedrockServer {
   private childProcess: Deno.ChildProcess | null = null;
   private serverPath: string;
   private configPath: string;
-  private readyForBackup: boolean = false;
   private worldName: string | null = null;
 
   constructor(serverFolder: string, configFolder: string) {
@@ -53,27 +52,35 @@ export class BedrockServer {
         write: (chunk) => this.log(chunk),
       }),
     );
+
+    // Handle unexpected exits
+    this.childProcess?.status.then((status) => {
+      if (!status.success) {
+        console.log(
+          `Server exited unexpectedly with code ${status.code}, restarting in 10 seconds.`,
+        );
+        this.process = null;
+        this.childProcess = null;
+        setTimeout(() => {
+          this.start(); // Restart the server
+        }, 10000);
+      }
+      resolve();
+    });
   }
 
   async backup(backupPath: string) {
-    if (!this.process) {
-      console.log("Server not running.");
-      return;
-    }
-
     console.log("Backing up Minecraft Bedrock server...");
-    this.readyForBackup = false;
 
     // Ensure the backup directory exists
     await ensureDir(backupPath);
 
     // Close the server
-    console.log("Stopping server");
-    await this.stop();
-
-    // Close the server
-    console.log("Stopping server");
-    await this.stop();
+    const wasRunning = !!this.process;
+    if (wasRunning) {
+      console.log("Stopping server");
+      await this.stop();
+    }
 
     // Copy the world folder
     console.log("Copying world folder...");
@@ -84,7 +91,10 @@ export class BedrockServer {
     }
 
     // Starting server
-    this.start();
+    if (wasRunning) {
+      console.log("Restarting server...");
+      await this.start();
+    }
     console.log("Backup done");
   }
 

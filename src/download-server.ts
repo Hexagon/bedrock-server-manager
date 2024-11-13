@@ -4,7 +4,6 @@ export async function downloadAndUnpackServer(
   downloadUrl: string,
   version: string,
   serverFolder: string,
-  configFolder: string,
 ) {
   // Download the server zip file
   console.log(`Downloading Minecraft server version ${version}...`);
@@ -36,15 +35,4 @@ export async function downloadAndUnpackServer(
   });
   await unzipProcess.output();
   await Deno.remove(zipFile);
-
-  // Update the start script
-  console.log("Updating start script...");
-  const startScript = `#!/bin/bash
-
-  LD_LIBRARY_PATH="${serverFolder}" ${serverFolder}/bedrock_server --port 19132 --config-dir "${configFolder}"
-  `;
-  await Deno.writeTextFile("./start.sh", startScript);
-  await Deno.chmod("./start.sh", 0o755);
-
-  console.log("Server updated successfully!");
 }
