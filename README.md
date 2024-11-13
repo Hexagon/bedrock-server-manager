@@ -8,7 +8,7 @@ Servers with ease.
 Install/update the `bsm` command using `deno`:
 
 ```bash
-deno install --global -fAn bsm jsr:@hexagon/bedrock-server-manager
+deno install --global -frAn bsm jsr:@hexagon/bedrock-server-manager
 ```
 
 This will install the `bsm` command globally, allowing you to use it from
