@@ -12,10 +12,10 @@
     "exclude": ["config", "server"]
   },
   "imports": {
-    "@cross/env": "jsr:@cross/env@^1.0.2",
-    "@cross/service": "jsr:@cross/service@^1.0.5",
-    "@std/assert": "jsr:@std/assert@1",
-    "@std/fs": "jsr:@std/fs@^1.0.5",
-    "@std/path": "jsr:@std/path@^1.0.8"
+    "@cross/env": "jsr:@cross/env@~1.0.2",
+    "@cross/service": "jsr:@cross/service@~1.0.5",
+    "@hexagon/croner": "jsr:@hexagon/croner@^9.0.0",
+    "@std/fs": "jsr:@std/fs@~1.0.5",
+    "@std/path": "jsr:@std/path@~1.0.8"
   }
 }

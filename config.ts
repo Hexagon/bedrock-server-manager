@@ -7,3 +7,6 @@ export const downloadPageUrlRegex =
 // File structure
 export const serverFolder = "./server";
 export const configFolder = "./config";
+export const backupFolder = "./backups";
+// Automated backups
+export const backupCronPattern = "0 0 */2 * * *";
