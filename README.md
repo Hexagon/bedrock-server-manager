@@ -1,7 +1,7 @@
 # Bedrock Server Manager (bsm)
 
 This tool helps you download, update, and manage Minecraft Bedrock Dedicated
-Servers with ease.
+Servers on Linux with ease.
 
 - Install or upgrade to the latest version of Minecraft Bedrock Dedicated Server
   using a single command `bsm latest`.
