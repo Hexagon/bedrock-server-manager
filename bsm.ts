@@ -27,7 +27,7 @@ const version = Deno.args[0] || "latest"; // Get version from command line argum
 async function main() {
   if (Deno.args.includes("help")) {
     console.log(`
-  Usage: bsm [command] [version]
+  Usage: bsm [command]
 
   Commands:
     latest                     Downloads and installs the latest Bedrock Server.
