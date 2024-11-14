@@ -4,7 +4,7 @@ This tool helps you download, update, and manage Minecraft Bedrock Dedicated
 Servers on Linux with ease.
 
 - Install or upgrade to the latest version of Minecraft Bedrock Dedicated Server
-  using a single command `bsm latest`.
+  using a single command `bsm use latest`.
 - Keeps configuration and worlds in a separate folder.
 - Updates vanilla resource packs by copying them from the server to the
   configuration folder on server upgrade.
@@ -29,10 +29,11 @@ deno install --global -frAn bsm jsr:@hexagon/bedrock-server-manager
 ## Usage
 
 Navigate to the directory where you want to install your Minecraft server and
-configuration files. Then run `bsm` with the desired version (usually "latest"):
+configuration files. Then run `bsm use` with the desired version (usually
+"latest"):
 
 ```bash
-bsm latest
+bsm use latest
 ```
 
 This will:
@@ -45,6 +46,10 @@ Now, you can customize the server settings in the
 `./config/server.configuration` file.
 
 **Starting the server manually:**
+
+It is recommended to run the server manually the first time, as you'll be able
+to verify that everything works as intended, and also interact with the server
+console.
 
 ```bash
 bsm start
@@ -59,6 +64,12 @@ bsm enable-service
 This will install a user mode service named `bsm-service-<randomnumber>`, which
 will be auto-started at boot. Service can be uninstalled using
 `bsm disable-service`. Generated service name can be seen in `bsm.json`.
+
+If you use systemctl as your service manager, you can:
+
+- Display server logs using `journalctl --user -u bsm-service-<randomnumber>`
+- Control your server using
+  `systemctl --user restart|start|stop bsm-service-<randomnumber>`
 
 ## Managing backups
 

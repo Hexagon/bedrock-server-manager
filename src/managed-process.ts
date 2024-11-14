@@ -36,7 +36,7 @@ export class BedrockServer {
       env: {
         LD_LIBRARY_PATH: resolve(this.serverPath, ".."),
       },
-      stdin: "piped",
+      stdin: "inherit",
       stdout: "piped",
       stderr: "piped",
     });

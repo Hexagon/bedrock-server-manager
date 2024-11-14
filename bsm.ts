@@ -22,17 +22,22 @@ import { getWorldName, listBackups, restoreBackup } from "./src/backup.ts";
 import { Cron } from "@hexagon/croner";
 import { resolve } from "@std/path";
 import { readOrCreateBSMJson } from "./src/user-config.ts";
-const version = Deno.args[0] || "latest"; // Get version from command line argument or default to "latest"
 
 async function main() {
-  if (Deno.args.includes("help")) {
+  const argumentOne = Deno.args.length > 0
+      ? Deno.args[0].trim().toLowerCase().replace("--", "")
+      : null,
+    argumentTwo = Deno.args.length > 1
+      ? Deno.args[1].trim().toLowerCase()
+      : null;
+
+  if (argumentOne === "help") {
     console.log(`
   Usage: bsm [command]
 
   Commands:
-    latest                     Downloads and installs the latest Bedrock Server.
-    <version>                  Downloads and installs a specific version.
-    list                       Lists all known versions.
+    use <version> | latest     Downloads and installs Bedrock Server.
+    list-versions              Lists all known versions.
     start                      Starts the Minecraft Bedrock Dedicated Server.
     enable-service             Installs a service to start the server at boot.
     disable-service            Removes the service that starts the server at boot.
@@ -43,7 +48,7 @@ async function main() {
     Deno.exit(0);
   }
 
-  if (Deno.args.includes("list")) {
+  if (argumentOne === "list-versions") {
     // Get dynamic latest
     try {
       const latest = await getLatestVersion();
@@ -67,7 +72,7 @@ async function main() {
     return;
   }
 
-  if (Deno.args.includes("enable-service")) {
+  if (argumentOne === "enable-service") {
     const config = await readOrCreateBSMJson(workingDirFolder);
 
     const startScript = "bsm start";
@@ -89,7 +94,7 @@ async function main() {
     Deno.exit(0);
   }
 
-  if (Deno.args.includes("disable-service")) {
+  if (argumentOne === "disable-service") {
     const config = await readOrCreateBSMJson(workingDirFolder);
 
     try {
@@ -107,7 +112,7 @@ async function main() {
     Deno.exit(0);
   }
 
-  if (Deno.args.includes("list-backups")) {
+  if (argumentOne === "list-backups") {
     const worldName = await getWorldName(configFolder);
     if (worldName) {
       const backups = await listBackups("./backups", worldName);
@@ -122,7 +127,7 @@ async function main() {
     Deno.exit(0);
   }
 
-  if (Deno.args.includes("restore-backup")) {
+  if (argumentOne === "restore-backup") {
     const worldName = await getWorldName(configFolder);
     if (worldName) {
       const backupTimestamp = Deno.args[1]; // Get timestamp from command line argument
@@ -142,7 +147,46 @@ async function main() {
     Deno.exit(0);
   }
 
-  if (Deno.args.includes("start")) {
+  if (argumentOne === "use") {
+    let selectedVersion: VersionEntry | null = null;
+    if (argumentTwo === "latest") {
+      selectedVersion = await getLatestVersion();
+      if (selectedVersion === null) {
+        selectedVersion = await getLatestKnownVersion("./known-versions.json");
+      }
+    } else if (argumentTwo !== null) {
+      selectedVersion = await getSpecificKnownVersion(
+        "./known-versions.json",
+        argumentTwo,
+      );
+      if (selectedVersion === null) {
+        console.error(
+          `Version ${argumentTwo} not found in known-versions.json`,
+        );
+        Deno.exit(1);
+      }
+    }
+
+    if (selectedVersion) {
+      console.log(
+        `Using version: ${selectedVersion.version}, URL: ${selectedVersion.url}`,
+      );
+      await downloadAndUnpackServer(
+        selectedVersion.url,
+        selectedVersion.version,
+        serverFolder,
+      );
+      await prepareConfig(serverFolder, configFolder);
+      await copyResourcePacks(serverFolder, configFolder);
+      console.log("Success!");
+      Deno.exit(0);
+    } else {
+      console.error("Unknown error.");
+      Deno.exit(1);
+    }
+  }
+
+  if (argumentOne === "start") {
     const config = await readOrCreateBSMJson(workingDirFolder);
 
     const server = new BedrockServer(serverFolder, configFolder);
@@ -159,39 +203,7 @@ async function main() {
       server.backup(backupFolder);
     });
   } else {
-    let selectedVersion: VersionEntry | null = null;
-
-    if (version === "latest") {
-      selectedVersion = await getLatestVersion();
-      if (selectedVersion === null) {
-        selectedVersion = await getLatestKnownVersion("./known-versions.json");
-      }
-    } else {
-      selectedVersion = await getSpecificKnownVersion(
-        "./known-versions.json",
-        version,
-      );
-      if (selectedVersion === null) {
-        console.error(`Version ${version} not found in known-versions.json`);
-        Deno.exit(1);
-      }
-    }
-
-    if (selectedVersion) {
-      console.log(
-        `Using version: ${selectedVersion.version}, URL: ${selectedVersion.url}`,
-      );
-      await downloadAndUnpackServer(
-        selectedVersion.url,
-        selectedVersion.version,
-        serverFolder,
-      );
-      await prepareConfig(serverFolder, configFolder);
-      await copyResourcePacks(serverFolder, configFolder);
-    } else {
-      console.error("Not sure wat to do, check arguments.");
-      Deno.exit(1);
-    }
+    console.log("Invalid arguments, try 'bsm help'.");
   }
 }
 
