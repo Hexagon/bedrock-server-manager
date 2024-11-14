@@ -25,6 +25,24 @@ import { readOrCreateBSMJson } from "./src/user-config.ts";
 const version = Deno.args[0] || "latest"; // Get version from command line argument or default to "latest"
 
 async function main() {
+  if (Deno.args.includes("help")) {
+    console.log(`
+  Usage: bsm [command] [version]
+
+  Commands:
+    latest                     Downloads and installs the latest Bedrock Server.
+    <version>                  Downloads and installs a specific version.
+    list                       Lists all known versions.
+    start                      Starts the Minecraft Bedrock Dedicated Server.
+    enable-service             Installs a service to start the server at boot.
+    disable-service            Removes the service that starts the server at boot.
+    list-backups               Lists available backups.
+    restore-backup <timestamp> Restores a backup from a given timestamp.
+    help                       Displays this help message.
+    `);
+    Deno.exit(0);
+  }
+
   if (Deno.args.includes("list")) {
     // Get dynamic latest
     try {
