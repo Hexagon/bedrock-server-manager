@@ -9,3 +9,5 @@ export const serverFolder = "./server";
 export const configFolder = "./config";
 export const backupFolder = "./backups";
 export const workingDirFolder = "./";
+// Other settings
+export const shutdownGraceSeconds = 10; // Delay after stop to actual stop

@@ -1,17 +1,24 @@
 import { ensureDir } from "@std/fs";
 import { resolve } from "@std/path";
 import { getWorldName, saveBackup } from "./backup.ts";
+import { shutdownGraceSeconds } from "../config.ts";
 
 export class BedrockServer {
   private process: Deno.Command | null = null;
   private childProcess: Deno.ChildProcess | null = null;
   private serverPath: string;
   private configPath: string;
+  private interactive: boolean;
   private worldName: string | null = null;
 
-  constructor(serverFolder: string, configFolder: string) {
+  constructor(
+    serverFolder: string,
+    configFolder: string,
+    interactive: boolean,
+  ) {
     this.serverPath = resolve(serverFolder, "bedrock_server");
     this.configPath = resolve(configFolder);
+    this.interactive = interactive;
   }
 
   async start() {
@@ -30,13 +37,12 @@ export class BedrockServer {
       console.error("World name not found");
       return;
     }
-
     this.process = new Deno.Command(this.serverPath, {
       cwd: this.configPath,
       env: {
         LD_LIBRARY_PATH: resolve(this.serverPath, ".."),
       },
-      stdin: "inherit",
+      stdin: this.interactive ? "inherit" : "piped",
       stdout: "piped",
       stderr: "piped",
     });
@@ -65,21 +71,44 @@ export class BedrockServer {
           this.start(); // Restart the server
         }, 10000);
       }
-      resolve();
+    }).catch((error) => {
+      console.error("Error during server startup:", error);
     });
   }
 
   async backup(backupPath: string) {
+    const wasRunning = !!this.process;
+
+    if (wasRunning && this.interactive) {
+      console.error("Live backup is not possible in interactive mode");
+      return;
+    }
+
     console.log("Backing up Minecraft Bedrock server...");
+
+    // Send a warning to the players if possible
+    if (!this.interactive) {
+      this.command(
+        `say Server is rebooting in ${shutdownGraceSeconds} seconds.`,
+      );
+      // Wait x seconds
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, shutdownGraceSeconds * 1000);
+      });
+    }
 
     // Ensure the backup directory exists
     await ensureDir(backupPath);
 
     // Close the server
-    const wasRunning = !!this.process;
     if (wasRunning) {
-      console.log("Stopping server");
-      await this.stop();
+      if (!this.interactive) {
+        await this.stop();
+      } else {
+        throw new Error("Live backup is not possible in interactive mode");
+      }
     }
 
     // Copy the world folder
@@ -118,7 +147,11 @@ export class BedrockServer {
     console.log("Stopping Minecraft Bedrock server...");
     this.command("stop");
     await this.childProcess.status;
+    try {
+      this.childProcess.stdin.close();
+    } catch (_e) { /* No-op */ }
     this.process = null;
+    this.childProcess = null;
   }
 
   async command(cmd: string) {
@@ -126,9 +159,22 @@ export class BedrockServer {
       console.log("Server not running.");
       return;
     }
-    await this.childProcess?.stdin?.getWriter().write(
-      new TextEncoder().encode(cmd + "\n"),
-    );
+    if (this.interactive) {
+      console.error(
+        "Could not send automated command as bsm is started in interactive mode: ",
+        cmd,
+      );
+    } else {
+      try {
+        // Write the command to the commandStream
+        const writer = this.childProcess?.stdin?.getWriter();
+        await writer?.ready;
+        await writer?.write(new TextEncoder().encode(cmd + "\n"));
+        await writer?.releaseLock();
+      } catch (error) {
+        console.error("Command failed:", cmd, error);
+      }
+    }
   }
 
   async done(): Promise<Deno.CommandStatus | undefined> {

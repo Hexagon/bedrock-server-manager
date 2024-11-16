@@ -38,7 +38,8 @@ async function main() {
   Commands:
     use <version> | latest     Downloads and installs Bedrock Server.
     list-versions              Lists all known versions.
-    start                      Starts the Minecraft Bedrock Dedicated Server.
+    start                      Starts the Minecraft Bedrock Dedicated Server in interactive mode.
+    start-scripted             Starts the Minecraft Bedrock Dedicated Server.
     enable-service             Installs a service to start the server at boot.
     disable-service            Removes the service that starts the server at boot.
     list-backups               Lists available backups.
@@ -75,7 +76,7 @@ async function main() {
   if (argumentOne === "enable-service") {
     const config = await readOrCreateBSMJson(workingDirFolder);
 
-    const startScript = "bsm start";
+    const startScript = "bsm start-scripted";
     try {
       await installService({
         system: false,
@@ -186,16 +187,20 @@ async function main() {
     }
   }
 
-  if (argumentOne === "start") {
+  if (argumentOne === "start" || argumentOne === "start-scripted") {
     const config = await readOrCreateBSMJson(workingDirFolder);
 
-    const server = new BedrockServer(serverFolder, configFolder);
+    const server = new BedrockServer(
+      serverFolder,
+      configFolder,
+      argumentOne !== "start-scripted",
+    );
 
     // Back up before start
-    server.backup(backupFolder);
+    await server.backup(backupFolder);
 
     // Do start
-    server.start();
+    await server.start();
 
     // Start the cron job for daily backups
     new Cron(config.backupCron, () => {
