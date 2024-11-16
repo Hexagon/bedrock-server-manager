@@ -1,6 +1,6 @@
 // utils.ts
 import { resolve } from "@std/path";
-import { copy, ensureDir, exists } from "@std/fs";
+import { copy, emptyDir, ensureDir, exists } from "@std/fs";
 
 export async function getWorldName(configPath: string): Promise<string | null> {
   try {
@@ -45,8 +45,7 @@ export async function restoreBackup(
   try {
     const backupWorldPath = resolve(backupPath, worldName, backupName);
     const worldPath = resolve(configPath, "worlds", worldName);
-
-    await ensureDir(worldPath); // Ensure the world directory exists
+    await emptyDir(worldPath); // Ensure the world directory exists and is empty
     await copy(backupWorldPath, worldPath, { overwrite: true });
     console.log(`Backup "${backupName}" restored to "${worldPath}"`);
   } catch (err) {
