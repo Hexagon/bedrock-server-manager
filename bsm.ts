@@ -22,6 +22,7 @@ import { getWorldName, listBackups, restoreBackup } from "./src/backup.ts";
 import { Cron } from "@hexagon/croner";
 import { resolve } from "@std/path";
 import { checkForBSMJson, readOrCreateBSMJson } from "./src/user-config.ts";
+import { checkBsmVersion } from "./src/check-bsm-version.ts";
 
 async function main() {
   const argumentOne = Deno.args.length > 0
@@ -175,6 +176,16 @@ async function main() {
   }
 
   if (argumentOne === "use") {
+    // Do a version check before bootstrapping or upgrading
+    const upToDate = await checkBsmVersion();
+    if (!upToDate) {
+      console.log("");
+      console.log(
+        "NOTE: There is a new version of bsm available, it is recommended to update by checking the instructions at https://github.com/hexagon/bedrock-server-manager",
+      );
+      console.log("");
+    }
+
     let selectedVersion: VersionEntry | null = null;
     if (argumentTwo === "latest") {
       selectedVersion = await getLatestVersion();
