@@ -1,5 +1,5 @@
-// version-finder.ts
 import { downloadPageUrl, downloadPageUrlRegex } from "../config.ts";
+import { knownVersions } from "../known-versions.ts";
 
 // Define the VersionEntry type
 export type VersionEntry = {
@@ -7,7 +7,7 @@ export type VersionEntry = {
   url: string;
 };
 
-export async function getLatestVersion(): Promise<VersionEntry> {
+export async function getLatestVersion(): Promise<VersionEntry | null> {
   const response = await fetch(downloadPageUrl, {
     headers: {
       "User-Agent":
@@ -17,22 +17,15 @@ export async function getLatestVersion(): Promise<VersionEntry> {
   const html = await response.text();
   const match = html.match(downloadPageUrlRegex);
   if (!match) {
-    throw new Error("Could not find the latest server version.");
+    return null;
   }
   return { version: match[1], url: match[0] };
 }
 
-export async function getLatestKnownVersion(
-  knownVersionFilePath: string,
-): Promise<VersionEntry | null> {
+export function getLatestKnownVersion(): VersionEntry | null {
   try {
-    const versions = await getAllKnownVersions(knownVersionFilePath);
-    if (versions) {
-      // Sort versions in descending order and return the first one
-      return versions.sort((a, b) => b.version.localeCompare(a.version))[0];
-    } else {
-      throw new Error("known-versions.json is empty or invalid.");
-    }
+    // Sort versions in descending order and return the first one
+    return knownVersions[knownVersions.length - 1];
   } catch (fallbackError) {
     console.error(
       `Failed to use fallback version: ${
@@ -43,40 +36,13 @@ export async function getLatestKnownVersion(
   }
 }
 
-export async function getAllKnownVersions(
-  knownVersionFilePath: string,
-): Promise<VersionEntry[] | null> {
-  try {
-    const knownVersions = await Deno.readTextFile(knownVersionFilePath);
-    const versions = JSON.parse(knownVersions) as VersionEntry[];
-    return versions;
-  } catch (error) {
-    console.error(
-      `Failed to get all known versions from known-versions.json: ${
-        (error instanceof Error) ? error.message : "Unknown"
-      }`,
-    );
-    return null;
-  }
+export function getAllKnownVersions(): VersionEntry[] {
+  return knownVersions;
 }
 
-export async function getSpecificKnownVersion(
-  knownVersionFilePath: string,
+export function getSpecificKnownVersion(
   version: string,
-): Promise<VersionEntry | null> {
-  try {
-    const versions = await getAllKnownVersions(knownVersionFilePath);
-    if (versions) {
-      return versions.find((v) => v.version === version) || null;
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error(
-      `Failed to get specific version from known-versions.json: ${
-        (error instanceof Error) ? error.message : "Unknown"
-      }`,
-    );
-    return null;
-  }
+): VersionEntry | null {
+  return knownVersions.find((v) => v.version === version) as VersionEntry ||
+    null;
 }

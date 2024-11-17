@@ -1,5 +1,6 @@
 import { ensureFile, exists } from "@std/fs";
 import { resolve } from "@std/path";
+import { baseServiceName, defaultBackupPattern } from "../config.ts";
 
 interface BSMJson {
   serviceName: string;
@@ -15,13 +16,22 @@ export async function readOrCreateBSMJson(filePath: string): Promise<BSMJson> {
       // Read existing bsm.json
       const decoder = new TextDecoder();
       const data = await Deno.readFile(bsmJsonPath);
-      return JSON.parse(decoder.decode(data));
+      const decodedData = decoder.decode(data);
+      const decodedObject: BSMJson = JSON.parse(decodedData);
+
+      // Inject defaults
+      decodedObject.serviceName ??= `${baseServiceName}-${
+        Math.floor(Math.random() * 10000)
+      }`;
+      decodedObject.backupCron ??= defaultBackupPattern;
+
+      return decodedObject;
     } else {
       // Create template bsm.json
       const randomNumber = Math.floor(Math.random() * 10000);
       const bsmJson: BSMJson = {
-        serviceName: `bsm-service-${randomNumber}`,
-        backupCron: "0 0 3 * * *", // Every day at 3:00 AM
+        serviceName: `${baseServiceName}-${randomNumber}`,
+        backupCron: defaultBackupPattern,
       };
 
       const encoder = new TextEncoder();
@@ -30,7 +40,7 @@ export async function readOrCreateBSMJson(filePath: string): Promise<BSMJson> {
         bsmJsonPath,
         encoder.encode(JSON.stringify(bsmJson, null, 2)),
       );
-      return bsmJson as unknown as BSMJson;
+      return bsmJson;
     }
   } catch (err) {
     console.error("Error reading or creating bsm.json:", err);

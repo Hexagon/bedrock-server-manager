@@ -11,3 +11,6 @@ export const backupFolder = "./backups";
 export const workingDirFolder = "./";
 // Other settings
 export const shutdownGraceSeconds = 10; // Delay after stop to actual stop
+// Configuration
+export const baseServiceName = "bsm-service";
+export const defaultBackupPattern = "0 0 3 * * *"; // 3 am every day

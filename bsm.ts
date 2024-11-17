@@ -53,14 +53,18 @@ async function main() {
     // Get dynamic latest
     try {
       const latest = await getLatestVersion();
-      console.log("\nLatest (dynamic):");
-      console.log(`\t${latest.version}\t${latest.url}`);
+      if (latest === null) {
+        console.log("Failed to fetch dynamic latest version.");
+      } else {
+        console.log("\nLatest (dynamic):");
+        console.log(`\t${latest.version}\t${latest.url}`);
+      }
     } catch (_error) {
       console.log("Failed to fetch dynamic latest version.");
     }
 
     // Get all known
-    const allKnownVersions = await getAllKnownVersions("./known-versions.json");
+    const allKnownVersions = await getAllKnownVersions();
     console.log("\nKnown Versions:");
     if (allKnownVersions) {
       allKnownVersions.forEach((v) => {
@@ -153,11 +157,10 @@ async function main() {
     if (argumentTwo === "latest") {
       selectedVersion = await getLatestVersion();
       if (selectedVersion === null) {
-        selectedVersion = await getLatestKnownVersion("./known-versions.json");
+        selectedVersion = await getLatestKnownVersion();
       }
     } else if (argumentTwo !== null) {
       selectedVersion = await getSpecificKnownVersion(
-        "./known-versions.json",
         argumentTwo,
       );
       if (selectedVersion === null) {
