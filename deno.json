@@ -1,7 +1,7 @@
 {
   "name": "@hexagon/bedrock-server-manager",
   "exports": "./bsm.ts",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "tasks": {
     "build": "deno fmt --check && deno lint && deno check bsm.ts && deno run -A build/known-versions.ts",
     "check-deps": "deno run -A jsr:@check/deps"
