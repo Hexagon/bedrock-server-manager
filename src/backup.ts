@@ -56,13 +56,17 @@ export async function restoreBackup(
 export async function saveBackup(
   backupPath: string,
   configPath: string,
-): Promise<void> {
+): Promise<boolean> {
   const worldName = await getWorldName(configPath);
   if (!worldName) {
     console.error("Could not determine world name from server.properties.");
-    return;
+    return false;
   }
-
+  const resolvedWorldPath = resolve(configPath, "worlds", worldName);
+  if (!await exists(resolvedWorldPath)) {
+    console.error("Could not find world folder, nothing to do yet.");
+    return false;
+  }
   try {
     // Ensure the backup directory exists
     await ensureDir(backupPath);
@@ -72,12 +76,14 @@ export async function saveBackup(
 
     // Copy the world folder
     await copy(
-      resolve(configPath, "worlds", worldName),
+      resolvedWorldPath,
       backupWorldPath,
       { overwrite: true },
     );
     console.log(`World backup saved to ${backupWorldPath}`);
+    return true;
   } catch (err) {
     console.error("Error saving backup:", err);
+    return false;
   }
 }

@@ -57,11 +57,11 @@ bsm start
 
 > **Note:** You can choose between two modes when starting:
 
-  * `bsm start`: Starts in interactive mode, which allow you to interact with the
-server console. I.e. write commands such as `op` and `say`.
-  * `bsm start-scripted`: Starts in non-interactive mode, this will allow bsm to
-send automated commands, such as controlling scheduled backups. This is used in
-the background when installing bsm as a service.
+- `bsm start`: Starts in interactive mode, which allow you to interact with the
+  server console. I.e. write commands such as `op` and `say`.
+- `bsm start-scripted`: Starts in non-interactive mode, this will allow bsm to
+  send automated commands, such as controlling scheduled backups. This is used
+  in the background when installing bsm as a service.
 
 **Starting the server at boot:**
 

@@ -113,8 +113,9 @@ export class BedrockServer {
 
     // Copy the world folder
     console.log("Copying world folder...");
+    let backupSucceeded = false;
     try {
-      await saveBackup(backupPath, this.configPath);
+      backupSucceeded = await saveBackup(backupPath, this.configPath);
     } catch (err) {
       console.error("Error copying world folder:", err);
     }
@@ -124,7 +125,11 @@ export class BedrockServer {
       console.log("Restarting server...");
       await this.start();
     }
-    console.log("Backup done");
+    if (backupSucceeded) {
+      console.log("Backup done");
+    } else {
+      console.log("Backup failed");
+    }
   }
 
   private log(chunk: Uint8Array) {

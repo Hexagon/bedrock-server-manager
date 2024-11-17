@@ -21,7 +21,7 @@ import { BedrockServer } from "./src/managed-process.ts";
 import { getWorldName, listBackups, restoreBackup } from "./src/backup.ts";
 import { Cron } from "@hexagon/croner";
 import { resolve } from "@std/path";
-import { readOrCreateBSMJson } from "./src/user-config.ts";
+import { checkForBSMJson, readOrCreateBSMJson } from "./src/user-config.ts";
 
 async function main() {
   const argumentOne = Deno.args.length > 0
@@ -78,8 +78,13 @@ async function main() {
   }
 
   if (argumentOne === "enable-service") {
+    if (!await checkForBSMJson(workingDirFolder)) {
+      console.error(
+        "bsm.json not found, you're probably trying to run bsm in the wrong working directory.",
+      );
+      Deno.exit(1);
+    }
     const config = await readOrCreateBSMJson(workingDirFolder);
-
     const startScript = "bsm start-scripted";
     try {
       await installService({
@@ -100,8 +105,13 @@ async function main() {
   }
 
   if (argumentOne === "disable-service") {
+    if (!await checkForBSMJson(workingDirFolder)) {
+      console.error(
+        "bsm.json not found, you're probably trying to run bsm in the wrong working directory.",
+      );
+      Deno.exit(1);
+    }
     const config = await readOrCreateBSMJson(workingDirFolder);
-
     try {
       await uninstallService({
         system: false,
@@ -118,6 +128,12 @@ async function main() {
   }
 
   if (argumentOne === "list-backups") {
+    if (!await checkForBSMJson(workingDirFolder)) {
+      console.error(
+        "bsm.json not found, you're probably trying to run bsm in the wrong working directory.",
+      );
+      Deno.exit(1);
+    }
     const worldName = await getWorldName(configFolder);
     if (worldName) {
       const backups = await listBackups("./backups", worldName);
@@ -133,6 +149,12 @@ async function main() {
   }
 
   if (argumentOne === "restore-backup") {
+    if (!await checkForBSMJson(workingDirFolder)) {
+      console.error(
+        "bsm.json not found, you're probably trying to run bsm in the wrong working directory.",
+      );
+      Deno.exit(1);
+    }
     const worldName = await getWorldName(configFolder);
     if (worldName) {
       const backupTimestamp = Deno.args[1]; // Get timestamp from command line argument
@@ -182,6 +204,7 @@ async function main() {
       );
       await prepareConfig(serverFolder, configFolder);
       await copyResourcePacks(serverFolder, configFolder);
+      await readOrCreateBSMJson(workingDirFolder);
       console.log("Success!");
       Deno.exit(0);
     } else {
@@ -191,8 +214,13 @@ async function main() {
   }
 
   if (argumentOne === "start" || argumentOne === "start-scripted") {
+    if (!await checkForBSMJson(workingDirFolder)) {
+      console.error(
+        "bsm.json not found, you're probably trying to run bsm in the wrong working directory.",
+      );
+      Deno.exit(1);
+    }
     const config = await readOrCreateBSMJson(workingDirFolder);
-
     const server = new BedrockServer(
       serverFolder,
       configFolder,

@@ -7,6 +7,18 @@ interface BSMJson {
   backupCron: string;
 }
 
+/**
+ * Checks if a bsm.json file exists at the given path.
+ *
+ * @param filePath The directory to check for the bsm.json file.
+ * @returns True if the file exists, false otherwise.
+ */
+export async function checkForBSMJson(filePath: string): Promise<boolean> {
+  const resolvedPath = resolve(filePath);
+  const bsmJsonPath = resolve(resolvedPath, "bsm.json");
+  return await exists(bsmJsonPath);
+}
+
 export async function readOrCreateBSMJson(filePath: string): Promise<BSMJson> {
   const resolvedPath = resolve(filePath);
   const bsmJsonPath = resolve(resolvedPath, "bsm.json");
