@@ -23,6 +23,7 @@ import { Cron } from "@hexagon/croner";
 import { resolve } from "@std/path";
 import { checkForBSMJson, readOrCreateBSMJson } from "./src/user-config.ts";
 import { checkBsmVersion } from "./src/check-bsm-version.ts";
+import { CurrentOS, OperatingSystem } from "@cross/runtime";
 
 async function main() {
   const argumentOne = Deno.args.length > 0
@@ -58,7 +59,13 @@ async function main() {
         console.log("Failed to fetch dynamic latest version.");
       } else {
         console.log("\nLatest (dynamic):");
-        console.log(`\t${latest.version}\t${latest.url}`);
+        console.log(
+          `\t${latest.version}\t${
+            CurrentOS === OperatingSystem.Windows
+              ? latest.windows_url
+              : latest.linux_url
+          }`,
+        );
       }
     } catch (_error) {
       console.log("Failed to fetch dynamic latest version.");
@@ -69,7 +76,11 @@ async function main() {
     console.log("\nKnown Versions:");
     if (allKnownVersions) {
       allKnownVersions.forEach((v) => {
-        console.log(`\t${v.version}\t${v.url}`);
+        console.log(
+          `\t${v.version}\t${
+            CurrentOS === OperatingSystem.Windows ? v.windows_url : v.linux_url
+          }`,
+        );
       });
     } else {
       console.log("    Failed to fetch known versions.");
@@ -205,11 +216,20 @@ async function main() {
     }
 
     if (selectedVersion) {
+      let downloadUrl: string | undefined;
+      if (CurrentOS === OperatingSystem.Windows) {
+        downloadUrl = selectedVersion.windows_url;
+      } else if (CurrentOS === OperatingSystem.Linux) {
+        downloadUrl = selectedVersion.linux_url;
+      } else {
+        console.error("Unsupported operating system.");
+        Deno.exit(1);
+      }
       console.log(
-        `Using version: ${selectedVersion.version}, URL: ${selectedVersion.url}`,
+        `Using version: ${selectedVersion.version}, URL: ${downloadUrl}`,
       );
       await downloadAndUnpackServer(
-        selectedVersion.url,
+        downloadUrl,
         selectedVersion.version,
         serverFolder,
       );

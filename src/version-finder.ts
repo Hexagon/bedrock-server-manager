@@ -1,10 +1,15 @@
-import { downloadPageUrl, downloadPageUrlRegex } from "../config.ts";
+import {
+  downloadPageLinuxUrlRegex,
+  downloadPageUrl,
+  downloadPageWindowsUrlRegex,
+} from "../config.ts";
 import { knownVersions } from "../known-versions.ts";
 
 // Define the VersionEntry type
 export type VersionEntry = {
   version: string;
-  url: string;
+  linux_url: string;
+  windows_url: string;
 };
 
 export async function getLatestVersion(): Promise<VersionEntry | null> {
@@ -15,11 +20,19 @@ export async function getLatestVersion(): Promise<VersionEntry | null> {
     },
   });
   const html = await response.text();
-  const match = html.match(downloadPageUrlRegex);
-  if (!match) {
+
+  const linuxMatch = html.match(downloadPageLinuxUrlRegex);
+  const windowsMatch = html.match(downloadPageWindowsUrlRegex);
+
+  if (!linuxMatch || !windowsMatch) {
     return null;
   }
-  return { version: match[1], url: match[0] };
+  // Assuming the version number is the same for both
+  return {
+    version: linuxMatch[1],
+    linux_url: linuxMatch[0],
+    windows_url: windowsMatch[0],
+  };
 }
 
 export function getLatestKnownVersion(): VersionEntry | null {

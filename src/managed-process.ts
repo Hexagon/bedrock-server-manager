@@ -2,6 +2,7 @@ import { ensureDir } from "@std/fs";
 import { resolve } from "@std/path";
 import { getWorldName, saveBackup } from "./backup.ts";
 import { shutdownGraceSeconds } from "../config.ts";
+import { CurrentOS, OperatingSystem } from "@cross/runtime";
 
 export class BedrockServer {
   private process: Deno.Command | null = null;
@@ -16,7 +17,10 @@ export class BedrockServer {
     configFolder: string,
     interactive: boolean,
   ) {
-    this.serverPath = resolve(serverFolder, "bedrock_server");
+    const bedrockExecutable = CurrentOS === OperatingSystem.Windows
+      ? "bedrock_server.exe"
+      : "bedrock_server";
+    this.serverPath = resolve(serverFolder, bedrockExecutable);
     this.configPath = resolve(configFolder);
     this.interactive = interactive;
   }
