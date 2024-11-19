@@ -16,7 +16,7 @@ export async function downloadAndUnpackServer(
     console.warn(
       `WARNING: Server folder "${serverFolder}" already exists. It will be deleted!`,
     );
-    emptyDir(serverFolder);
+    await emptyDir(serverFolder);
   }
 
   // Unpack the zip file using zip.js

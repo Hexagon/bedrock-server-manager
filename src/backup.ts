@@ -28,6 +28,13 @@ export async function listBackups(
       const entries = Array.from(Deno.readDirSync(worldBackupPath));
       return entries
         .filter((entry) => entry.isDirectory)
+        .sort((a,b) => {
+          let diff = 0;
+          try {
+            diff = Date.parse(a.name) - Date.parse(b.name);
+          } catch (_e) { /* Ignore */}
+          return diff;
+        })
         .map((entry) => entry.name);
     }
   } catch (err) {
