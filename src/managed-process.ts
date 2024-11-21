@@ -1,4 +1,4 @@
-import { ensureDir } from "@std/fs";
+import { copy, ensureDir } from "@std/fs";
 import { resolve } from "@std/path";
 import { getWorldName, saveBackup } from "./backup.ts";
 import { shutdownGraceSeconds } from "../config.ts";
@@ -8,6 +8,7 @@ export class BedrockServer {
   private process: Deno.Command | null = null;
   private childProcess: Deno.ChildProcess | null = null;
   private serverPath: string;
+  private serverPathWindows: string | null = null;
   private configPath: string;
   private interactive: boolean;
   private worldName: string | null = null;
@@ -20,6 +21,12 @@ export class BedrockServer {
     const bedrockExecutable = CurrentOS === OperatingSystem.Windows
       ? "bedrock_server.exe"
       : "bedrock_server";
+
+    // Workaround for windows working dir problem, always copy the executable to the config directory before starting
+    if (CurrentOS === OperatingSystem.Windows) {
+      this.serverPathWindows = resolve(configFolder, bedrockExecutable);
+    }
+
     this.serverPath = resolve(serverFolder, bedrockExecutable);
     this.configPath = resolve(configFolder);
     this.interactive = interactive;
@@ -32,6 +39,13 @@ export class BedrockServer {
     }
     console.log("Starting Minecraft Bedrock server...");
 
+    if (this.serverPathWindows) {
+      console.log(
+        "Running on windows, need to copy the server executable to the config directory",
+      );
+      await copy(this.serverPath, this.serverPathWindows, { overwrite: true });
+    }
+
     console.log("Identifying world name...");
     this.worldName = await getWorldName(this.configPath);
 
@@ -41,15 +55,18 @@ export class BedrockServer {
       console.error("World name not found");
       return;
     }
-    this.process = new Deno.Command(this.serverPath, {
-      cwd: this.configPath,
-      env: {
-        LD_LIBRARY_PATH: resolve(this.serverPath, ".."),
+    this.process = new Deno.Command(
+      this.serverPathWindows ? this.serverPathWindows : this.serverPath,
+      {
+        cwd: this.configPath,
+        env: {
+          LD_LIBRARY_PATH: resolve(this.serverPath, ".."),
+        },
+        stdin: this.interactive ? "inherit" : "piped",
+        stdout: "piped",
+        stderr: "piped",
       },
-      stdin: this.interactive ? "inherit" : "piped",
-      stdout: "piped",
-      stderr: "piped",
-    });
+    );
     this.childProcess = this.process.spawn();
     // Pipe both stdout and stderr to the `child` method
     this.childProcess.stdout.pipeTo(
