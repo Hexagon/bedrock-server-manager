@@ -15,7 +15,7 @@
   "imports": {
     "@check/self": "jsr:@check/self@^0.3.2",
     "@cross/runtime": "jsr:@cross/runtime@^1.1.0",
-    "@cross/service": "jsr:@cross/service@^1.0.6",
+    "@cross/service": "jsr:@cross/service@^1.0.7",
     "@hexagon/croner": "jsr:@hexagon/croner@~9.0.0",
     "@std/fs": "jsr:@std/fs@~1.0.5",
     "@std/path": "jsr:@std/path@~1.0.8",
