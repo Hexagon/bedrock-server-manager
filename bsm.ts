@@ -16,7 +16,6 @@ import {
   type VersionEntry,
 } from "./src/version-finder.ts";
 import { installService, uninstallService } from "@cross/service";
-import { getEnv } from "@cross/env";
 import { BedrockServer } from "./src/managed-process.ts";
 import { getWorldName, listBackups, restoreBackup } from "./src/backup.ts";
 import { Cron } from "@hexagon/croner";
@@ -104,7 +103,6 @@ async function main() {
         name: config.serviceName,
         cmd: startScript,
         cwd: resolve("./"),
-        user: getEnv("USER"),
       }, false);
       console.log(
         `Minecraft Bedrock Server service '${config.serviceName}' enabled successfully!`,
