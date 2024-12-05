@@ -1,5 +1,8 @@
 import { emptyDir, ensureDir, exists } from "@std/fs";
 import { BlobReader, Uint8ArrayWriter, ZipReader } from "@zip-js/zip-js";
+import { ensureExecutableFlag } from "./ensure-executable.ts";
+import { join } from "@std/path";
+import { CurrentOS, OperatingSystem } from "@cross/runtime";
 
 export async function downloadAndUnpackServer(
   downloadUrl: string,
@@ -46,5 +49,13 @@ export async function downloadAndUnpackServer(
     }
   } catch (error) {
     console.error("Error unpacking zip file:", error);
+    return;
+  }
+
+  if (CurrentOS !== OperatingSystem.Windows) {
+    if (!(await ensureExecutableFlag(join(serverFolder, "bedrock_server")))) {
+      console.error("Error setting server executable permissions");
+      return;
+    }
   }
 }

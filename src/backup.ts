@@ -29,11 +29,12 @@ export async function listBackups(
       return entries
         .filter((entry) => entry.isDirectory)
         .sort((a, b) => {
-          let diff = 0;
-          try {
-            diff = Date.parse(a.name) - Date.parse(b.name);
-          } catch (_e) { /* Ignore */ }
-          return diff;
+          const result =
+            a.name.localeCompare(b.name, undefined, { sensitivity: "accent" })
+              ? -1
+              : 1;
+          console.log(result);
+          return result;
         })
         .map((entry) => entry.name);
     }
